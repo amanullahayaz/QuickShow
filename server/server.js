@@ -20,7 +20,6 @@ await connectDB();
 
 // Routes
 app.get('/', async (req, res) => {
- 
   res.send('i am home');
 });
 
