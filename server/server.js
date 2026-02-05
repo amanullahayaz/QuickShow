@@ -20,8 +20,14 @@ await connectDB();
 
 // Routes
 app.get('/', async (req, res) => {
+ 
   res.send('i am home');
 });
+
+app.use("/api/inngest", async (req, res, next) => {
+  await connectDB();
+  next();
+}, serve({ client: inngest, functions }));
 
 
 app.listen(port,(req,res)=>{
