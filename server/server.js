@@ -7,7 +7,7 @@ import { serve } from "inngest/express";
 import { inngest, functions } from "./inngest/index.js";
 
 dotenv.config();
-
+const port=3000;
 const app = express();
 
 // Middleware
@@ -15,27 +15,17 @@ app.use(express.json());
 app.use(cors());
 app.use(clerkMiddleware());
 
-// ⚠️ DO NOT connect DB at top-level
-let isConnected = false;
-async function initDB() {
-  if (!isConnected) {
-    await connectDB();
-    isConnected = true;
-  }
-}
+
+await connectDB();
 
 // Routes
 app.get('/', async (req, res) => {
-  await initDB();
   res.send('i am home');
 });
 
-app.use("/api/inngest", async (req, res, next) => {
-  await initDB();
-  next();
-}, serve({ client: inngest, functions }));
 
-// ❌ REMOVE app.listen()
-// app.listen(port)
+app.listen(port,(req,res)=>{
+  console.log(`App is listening to the port number ${port}`);
+});
 
 export default app;
