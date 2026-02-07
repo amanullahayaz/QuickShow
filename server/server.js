@@ -6,7 +6,8 @@ import { clerkMiddleware } from '@clerk/express';
 import { serve } from "inngest/express";
 import { inngest, functions } from "./inngest/index.js";
 import showRouter from './routes/showRoutes.js';
-import bookingRouter from './routes/bookingRouter.js';
+import bookingRouter from './routes/bookingRoutes.js';
+import adminRouter from './routes/adminRoutes.js';
 
 dotenv.config();
 const port=3000;
@@ -29,7 +30,7 @@ app.use("/api/inngest", serve({ client: inngest, functions }));
 app.use('/api/show',showRouter);
 app.use("/api/booking",bookingRouter);
 
-
+app.use("/api/admin", adminRouter);
 
 app.listen(port,(req,res)=>{
   console.log(`App is listening to the port number ${port}`);
