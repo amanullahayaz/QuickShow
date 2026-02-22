@@ -21,7 +21,7 @@ const Layout = () => {
         </div>
     </div>
     </>
-  ) : <Loading/
+  ) : <Loading/>
 }
 
 export default Layout
