@@ -1,5 +1,5 @@
-import Booking from "../models/Booking";
-import clerkClient from "@clerk/express"
+import Booking from "../models/Booking.js";
+import { clerkClient } from '@clerk/express';
 import Movie from "../models/Movie.js";
 
 
