@@ -4,9 +4,9 @@ import { useAuth, useUser } from "@clerk/clerk-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AppContext } from "./AppContext";
-
 axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 
+const image_base_url=import.meta.env.VITE_TMDB_IMAGE_BASE_URL;
 export const AppProvider = ({ children }) => {
 
     const [isAdmin, setIsAdmin] = useState(false);
@@ -96,6 +96,8 @@ export const AppProvider = ({ children }) => {
         favoriteMovies,
         user,
         navigate,
+        getToken,
+        image_base_url, 
     };
 
     return (
