@@ -1,24 +1,39 @@
 import React, { useEffect, useState } from 'react'
-import { dummyBookingData } from '../../assets/assets';
 import Loading from '../../components/Loading';
 import Title from '../../components/Admin/Title';
 import { dateFormat } from '../../lib/dateFormat';
+import { useAppContext } from '../../context/AppContext';
+import toast from 'react-hot-toast';
 
 const ListBookings = () => {
-
+        const {axios,getToken,user}=useAppContext();
         const Currency=import.meta.env.VITE_CURRENCY
         const[bookings,setBookings]=useState([]);
         const[isloading,setIsLoading]=useState(true);
 
         useEffect(()=>{
         const getAllBookings=async()=>{
-            setBookings(dummyBookingData)
-            setIsLoading(false);
+            try{
+                const {data}=axios.get('/api/admin//all-bookings',{
+                headers : {Authorization : `Bearer ${await getToken()}`}
+            });
+            if(data.success){
+                setBookings(data.bookings);
+                
+            }else{
+                toast.error("Error loading booking data");
+            }
+            }catch(error){
+                console.error("Error loading bookings ",error)
+            }
+            setIsLoading(false)
         }
 
-        
-            getAllBookings();
-        },[])
+            if(user){
+                 getAllBookings();
+            }
+           
+        },[user])
 
 
   return !isloading? (
