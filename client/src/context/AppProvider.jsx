@@ -4,9 +4,10 @@ import { useAuth, useUser } from "@clerk/clerk-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AppContext } from "./AppContext";
+
 axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 
-const image_base_url=import.meta.env.VITE_TMDB_IMAGE_BASE_URL;
+const image_base_url = import.meta.env.VITE_TMDB_IMAGE_BASE_URL;
 export const AppProvider = ({ children }) => {
 
     const [isAdmin, setIsAdmin] = useState(false);
@@ -37,7 +38,26 @@ export const AppProvider = ({ children }) => {
         };
         fetchShows();
     }, []);
+        const fetchFavoriteMovies = async () => {
+        try {
+            const token = await getToken();
 
+            const { data } = await axios.get("/api/user/favorites", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (data.success) {
+                setFavoriteMovies(data.movies);
+            } else {
+                toast.error(data.message);
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     useEffect(() => {
         const fetchIsAdmin = async () => {
@@ -62,42 +82,27 @@ export const AppProvider = ({ children }) => {
                 setIsAdmin(false);
             }
         };
-        const fetchFavoriteMovies = async () => {
-            try {
-                const token = await getToken();
 
-                const { data } = await axios.get("/api/user/favorites", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                if (data.success) {
-                    setFavoriteMovies(data.movies);
-                } else {
-                    toast.error(data.message);
-                }
-
-            } catch (error) {
-                console.log(error);
-            }
-        };
 
         if (user) {
             fetchIsAdmin();
             fetchFavoriteMovies();
+
         }
     }, [user]);
+
+
 
     const value = {
         axios,
         isAdmin,
         shows,
+        fetchFavoriteMovies,
         favoriteMovies,
         user,
         navigate,
         getToken,
-        image_base_url, 
+        image_base_url,
     };
 
     return (

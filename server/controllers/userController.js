@@ -24,30 +24,48 @@ export const getUserBookings= async (req,res)=>{
 
 //API controller function to update favorite movie in clerk user metadata
 
-export const updateFavorite=async(req,res)=>{
-    try{
-        const {movieId}=req.body;
-        const userId = req.auth().userId;
+export const updateFavorite = async (req, res) => {
+  try {
+    const { movieId } = req.body;
+    const userId = req.auth().userId;
 
-        const user = await clerkClient.users.getUser(userId);
+    const user = await clerkClient.users.getUser(userId);
 
-        if(!user.privateMetadata.favorites){
-            user.privateMetadata.favorites=[];
-        }
+    // Always start with clean array
+    let favorites = user.privateMetadata?.favorites || [];
 
-        if(!user.privateMetadata.favorites.includes(movieId)){
-            user.privateMetadata.favorites.push(movieId);
-        }else{
-            user.privateMetadata.favorites=user.privateMetadata.favorites.filter((item)=>item!==movieId);
-        }
+    // Remove any null values first (important)
+    favorites = favorites.filter(Boolean);
 
-        await clerkClient.users.updateUserMetadata(userId,{privateMetadata:user.privateMetadata});
-        res.json({success : true , message :"Favorite movie updates successfully"});
-    }catch(error){
-            console.log(error.message);
-            res.json({success  : false , message : error.message});
-        }
+    const exists = favorites.includes(movieId);
+
+    if (exists) {
+      // Remove completely
+      favorites = favorites.filter(id => id !== movieId);
+    } else {
+      favorites.push(movieId);
     }
+
+    // Update ONLY favorites field properly
+    await clerkClient.users.updateUserMetadata(userId, {
+      privateMetadata: {
+        ...user.privateMetadata,
+        favorites
+      }
+    });
+
+    res.json({
+      success: true,
+      message: exists
+        ? "Removed from favorites"
+        : "Added to favorites"
+    });
+
+  } catch (error) {
+    console.log(error.message);
+    res.json({ success: false, message: error.message });
+  }
+};
 
 
     // Api controller to get favorite movies 
