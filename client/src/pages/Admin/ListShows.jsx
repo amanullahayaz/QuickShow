@@ -1,6 +1,5 @@
 import { Currency } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
-import { dummyShowsData } from '../../assets/assets';
 import Loading from '../../components/Loading';
 import Title from '../../components/Admin/Title';
 import { dateFormat } from '../../lib/dateFormat';
