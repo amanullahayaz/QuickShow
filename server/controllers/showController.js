@@ -5,7 +5,7 @@ import Show from "../models/Show.js";
 // API to get now playing movies
 export const getNowPlayingMovies = async (req, res) => {
   try {
-    console.log("TMDB KEY:", process.env.TMDB_API_KEY);
+    // console.log("TMDB KEY:", process.env.TMDB_API_KEY);
 
     const { data } = await axios.get(
       "https://api.themoviedb.org/3/movie/now_playing",
