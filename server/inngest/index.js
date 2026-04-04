@@ -28,7 +28,7 @@ const syncUserCreation = inngest.createFunction(
 );
 //Inngest fn to delete user from database
 const syncUserDeletion = inngest.createFunction(
-  { id: 'delete-user-wih-clerk' },
+  { id: 'delete-user-with-clerk' },
   { event: 'clerk/user.deleted' },
   async ({ event }) => {
     const { id } = event.data
@@ -65,25 +65,24 @@ const releaseSeatsAndDeleteBooking = inngest.createFunction(
     await step.sleepUntil('wait-for-10-minutes', tenMinutesLater)
     await step.run('check-payment-status', async () => {
       const bookingId = event.data.bookingId;
-      const bookingData = await Booking.findById(bookingId);
+      const booking = await Booking.findById(bookingId);
 
       // if payment is not made, release seats and delete booking
-      if (bookingData && !bookingData.isPaid) {
-        const showData = await Show.findById(bookingData.show);
-        if (showData) {
-          bookingData.bookedSeats.forEach((seat) => {
-            delete showData.occupiedSeats[seat];
+      if (!booking.isPaid) {
+        const show = await Show.findById(booking.show);
+
+          booking.bookedSeats.forEach((seat) => {
+            delete show.occupiedSeats[seat];
           });
 
-          showData.markModified('occupiedSeats');
-          await showData.save();
-        }
+          show.markModified('occupiedSeats');
+          await show.save();
+          await Booking.findByIdAndDelete(booking._id);
+        } 
+   })
+  })
+  
 
-        await Booking.findByIdAndDelete(bookingData._id);
-      }
-    })
-  }
-)
 
 
 // Inngest function to send emails when user books a show 
