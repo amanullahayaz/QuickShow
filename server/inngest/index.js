@@ -2,10 +2,10 @@ import { Inngest } from "inngest";
 import mongoose from "mongoose";
 
 // Force register all models
-import "../models/User.js";
-import "../models/Booking.js";
-import "../models/Show.js";
-import "../models/Movie.js";
+import User from "../models/User.js";
+import Booking from "../models/Booking.js";
+import Show from "../models/Show.js";
+import Movie from "../models/Movie.js";
 import sendEmail from "../configs/nodemailer.js";
 
 // Create a client to send and receive events
@@ -65,21 +65,21 @@ const releaseSeatsAndDeleteBooking = inngest.createFunction(
     await step.sleepUntil('wait-for-10-minutes', tenMinutesLater)
     await step.run('check-payment-status', async () => {
       const bookingId = event.data.bookingId;
-      const booking = await booking.findById(bookingId)
-
+      const bookingData = await Booking.findById(bookingId);
 
       // if payment is not made, release seats and delete booking
+      if (bookingData && !bookingData.isPaid) {
+        const showData = await Show.findById(bookingData.show);
+        if (showData) {
+          bookingData.bookedSeats.forEach((seat) => {
+            delete showData.occupiedSeats[seat];
+          });
 
-      if (!booking.isPaid) {
-        const show = await show.findById(booking.show);
-        booking.bookedSeats.forEach((seat) => {
-          delete show.occupiedSeats[seat]
-        });
+          showData.markModified('occupiedSeats');
+          await showData.save();
+        }
 
-        show.markModified('occupiedSeats')
-        await show.save()
-
-        await booking.findByIdAndDelete(booking._id)
+        await Booking.findByIdAndDelete(bookingData._id);
       }
     })
   }
@@ -94,34 +94,36 @@ const sendBookingConfirmationEmail = inngest.createFunction(
   { event: "app/show.booked" },
 
   async ({ event, step }) => {
-    
+
 
     const { bookingId } = event.data;
 
-    const booking = await booking.findById(bookingId)
+    const bookingData = await Booking.findById(bookingId)
       .populate({
         path: 'show',
-        populate: { path: 'movie', model: 'movie' } 
+        populate: { path: 'movie', model: 'movie' }
       })
       .populate('user');
 
+    if (!bookingData) return;
+
     await sendEmail({
-      to: booking.user.email,
-      subject: `Payment Confirmation: "${booking.show.movie.title}" booked!`,
+      to: bookingData.user.email,
+      subject: `Payment Confirmation: "${bookingData.show.movie.title}" booked!`,
       body: `<div style="font-family: Arial, sans-serif; line-height: 1.5;">
-        <h2>Hi ${booking.user.name},</h2>
+        <h2>Hi ${bookingData.user.name},</h2>
         <p>Your booking for <strong style="color: #F84565;">
-          ${booking.show.movie.title}
+          ${bookingData.show.movie.title}
         </strong> is confirmed.</p>
 
         <p>
-          <strong>Date:</strong> ${new Date(booking.show.showDateTime).toLocaleDateString('en-US', {
-            timeZone: 'Asia/Kolkata'
-          })}<br/>
+          <strong>Date:</strong> ${new Date(bookingData.show.showDateTime).toLocaleDateString('en-US', {
+        timeZone: 'Asia/Kolkata'
+      })}<br/>
 
-          <strong>Time:</strong> ${new Date(booking.show.showDateTime).toLocaleTimeString('en-US', {
-            timeZone: 'Asia/Kolkata'
-          })}
+          <strong>Time:</strong> ${new Date(bookingData.show.showDateTime).toLocaleTimeString('en-US', {
+        timeZone: 'Asia/Kolkata'
+      })}
         </p>
 
         <p>Enjoy the show! 🍿</p>
