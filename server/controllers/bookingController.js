@@ -1,5 +1,5 @@
 
-import { inngest } from "../inngest/index.js";
+import { Inngest } from "inngest";
 import Booking from "../models/Booking.js";
 import Show from "../models/Show.js"
 import stripe from 'stripe'
@@ -113,17 +113,13 @@ export const createBooking = async (req, res) => {
  
 
     //Run inngest Schedular function to check payment status after 10 minutes
-    try {
-      await inngest.send({
-        name : 'app/checkpayment',
-        data:{
-          bookingId:booking._id.toString()
-        }
-      });
-    } catch (err) {
-      console.log("Inngest Event Error:", err.message);
-      // We still want to let the user proceed to Stripe even if Inngest fails here
-    }
+   const inngest = new Inngest({ id: "movie-ticket-booking" });
+    await inngest.send({
+      name : 'app/checkpayment',
+      data:{
+        bookingId:booking._id.toString()
+      }
+    });
 
     res.json({
       success: true,
