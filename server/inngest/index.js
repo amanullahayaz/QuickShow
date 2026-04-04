@@ -94,7 +94,7 @@ const sendBookingConfirmationEmail = inngest.createFunction(
   { event: "app/show.booked" },
 
   async ({ event, step }) => {
-    await connectDB(); // 🔥 IMPORTANT
+    
 
     const { bookingId } = event.data;
 
