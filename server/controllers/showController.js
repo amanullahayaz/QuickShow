@@ -28,6 +28,10 @@ export const addShow = async (req, res) => {
   try {
     const { movieId, showsInput, showPrice } = req.body;
 
+    if (!showsInput || !Array.isArray(showsInput)) {
+      return res.json({ success: false, message: "Invalid shows input" });
+    }
+
     let movie = await Movie.findById(movieId);
 
     if (!movie) {

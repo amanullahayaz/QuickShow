@@ -10,9 +10,9 @@ const checkAvailability=async(showId,selectedSeats)=>{
       const showData=  await Show.findById(showId);
       if(!showData)return false;
 
-      const occupiedSeats=showData.occupiedSeats;
+      const occupiedSeats = showData.occupiedSeats || {};
     
-      const isAnySeatTaken=selectedSeats.some(seat=>occupiedSeats[seat]);
+      const isAnySeatTaken = selectedSeats.some((seat) => occupiedSeats[seat]);
 
       return !isAnySeatTaken;
 
@@ -56,6 +56,12 @@ export const createBooking = async (req, res) => {
     }
 
     const showData = await Show.findById(showId).populate("movie");
+    if (!showData) {
+      return res.json({
+        success: false,
+        message: "Show not found"
+      });
+    }
 
     const booking = await Booking.create({
       user: userId,
@@ -136,8 +142,12 @@ export const getOccupiedSeats=async(req,res)=>{
     try{
             const {showId}=req.params;
             const showData=await Show.findById(showId);
+            
+            if (!showData) {
+                return res.json({success : false, message : "Show not found"});
+            }
 
-            const occupiedSeats=Object.keys(showData.occupiedSeats);
+            const occupiedSeats = Object.keys(showData.occupiedSeats || {});
             res.json({success : true, occupiedSeats});
 
     }catch(error){
