@@ -65,13 +65,13 @@ const releaseSeatsAndDeleteBooking = inngest.createFunction(
     await step.sleepUntil('wait-for-10-minutes', tenMinutesLater)
     await step.run('check-payment-status', async () => {
       const bookingId = event.data.bookingId;
-      const booking = await Booking.findById(bookingId)
+      const booking = await booking.findById(bookingId)
 
 
       // if payment is not made, release seats and delete booking
 
       if (!booking.isPaid) {
-        const show = await Show.findById(booking.show);
+        const show = await show.findById(booking.show);
         booking.bookedSeats.forEach((seat) => {
           delete show.occupiedSeats[seat]
         });
@@ -79,7 +79,7 @@ const releaseSeatsAndDeleteBooking = inngest.createFunction(
         show.markModified('occupiedSeats')
         await show.save()
 
-        await Booking.findByIdAndDelete(booking._id)
+        await booking.findByIdAndDelete(booking._id)
       }
     })
   }
@@ -98,10 +98,10 @@ const sendBookingConfirmationEmail = inngest.createFunction(
 
     const { bookingId } = event.data;
 
-    const booking = await Booking.findById(bookingId)
+    const booking = await booking.findById(bookingId)
       .populate({
         path: 'show',
-        populate: { path: 'movie', model: 'Movie' } // ✅ FIXED
+        populate: { path: 'movie', model: 'Movie' } 
       })
       .populate('user');
 
