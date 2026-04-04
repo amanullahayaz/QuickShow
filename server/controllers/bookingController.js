@@ -114,12 +114,16 @@ export const createBooking = async (req, res) => {
 
     //Run inngest Schedular function to check payment status after 10 minutes
    const inngest = new Inngest({ id: "movie-ticket-booking" });
-    await inngest.send({
-      name : 'app/checkpayment',
-      data:{
-        bookingId:booking._id.toString()
-      }
-    });
+    try {
+      await inngest.send({
+        name : 'app/checkpayment',
+        data:{
+          bookingId:booking._id.toString()
+        }
+      });
+    } catch (err) {
+      console.log("Inngest Event Error:", err.message);
+    }
 
     res.json({
       success: true,
