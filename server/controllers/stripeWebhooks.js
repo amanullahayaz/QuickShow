@@ -30,11 +30,14 @@ export const stripeWebhooks=async(request,response)=>{
                 })
 
                 //Send confirmation email
-
-                await inngest.send({
-                    name:"app/show.booked",
-                    data:{bookingId}
-                })
+                try {
+                    await inngest.send({
+                        name:"app/show.booked",
+                        data:{bookingId}
+                    })
+                } catch (err) {
+                    console.log("Inngest email event error:", err.message);
+                }
 
                 break;
             }
