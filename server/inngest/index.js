@@ -10,7 +10,7 @@ import sendEmail from "../configs/nodemailer.js";
 
 
 // Create a client to send and receive events
-export const inngest = new Inngest({ 
+export const inngest = new Inngest({
   id: "movie-ticket-booking",
   eventKey: process.env.INNGEST_EVENT_KEY || "local"
 });
@@ -236,25 +236,23 @@ const sendNewShowNotifications = inngest.createFunction(
   { id: "send-new-show-notification" },
   { event: "app/show.added" },
   async ({ event }) => {
-    const { showId } = event.data;
-    if (!showId) return { message: "No showId provided" };
-    
-    const show = await Show.findById(showId).populate('movie');
-    if (!show || !show.movie) return { message: "Show or Movie not found" };
-    
-    const users = await User.find({}).select("name email");
+
+    const { movieTitle, showDateTime } = event.data;
+    const users = await User.find({})
+
+
     for (const user of users) {
       await sendEmail({
         to: user.email,
-        subject: `New Show Added : ${show.movie.title}`,
+        subject: `New Show Added : ${movieTitle}`,
         body: `<div style="font-family: Arial, sans-serif; padding: 20px;">
                   <h2>Hello ${user.name},</h2>
                   <p>A new show has been added:</p>
-                  <h3 style="color: #F84565;">"${show.movie.title}"</h3>
+                  <h3 style="color: #F84565;">"${movieTitle}"</h3>
                   <p>
-                    is scheduled for <strong>${new Date(show.showDateTime)
+                    is scheduled for <strong>${new Date(showDateTime)
             .toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata' })}</strong> at
-                    <strong>${new Date(show.showDateTime)
+                    <strong>${new Date(showDateTime)
             .toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata' })}</strong>.
                   </p>
                   <br/>

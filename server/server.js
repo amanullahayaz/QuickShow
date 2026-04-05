@@ -11,12 +11,12 @@ import adminRouter from './routes/adminRoutes.js';
 import userRouter from './routes/userRoutes.js';
 import { stripeWebhooks } from './controllers/stripeWebhooks.js';
 
-const port=3000;
+const port = 3000;
 const app = express();
 
 
 //Stripe webhooks route
-app.use('/api/stripe',express.raw({type : 'application/json'}),stripeWebhooks)
+app.use('/api/stripe', express.raw({ type: 'application/json' }), stripeWebhooks)
 
 // Middleware
 app.use(express.json());
@@ -32,14 +32,14 @@ app.get('/', async (req, res) => {
 });
 
 app.use("/api/inngest", serve({ client: inngest, functions }));
-app.use('/api/show',showRouter);
-app.use("/api/booking",bookingRouter);
+app.use('/api/show', showRouter);
+app.use("/api/booking", bookingRouter);
 app.use("/api/admin", adminRouter);
-app.use("/api/user",userRouter);
+app.use("/api/user", userRouter);
 
-app.listen(port,(req,res)=>{
+app.listen(port, (req, res) => {
   console.log(`App is listening to the port number ${port}`);
 });
 
 export default app;
-  
+
