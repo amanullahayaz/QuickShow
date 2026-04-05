@@ -1,6 +1,7 @@
 import axios from "axios";
 import Movie from "../models/Movie.js";
 import Show from "../models/Show.js";
+import inngest from "../inngest/index.js";
 
 // API to get now playing movies
 export const getNowPlayingMovies = async (req, res) => {
@@ -90,7 +91,12 @@ export const addShow = async (req, res) => {
     if (showsToCreate.length > 0) {
       await Show.insertMany(showsToCreate);
     }
+    //Trigget Inngest Event 
 
+    await inngest.send({
+      name: "app/show.added",
+      data: { movieTitle: movie.title }
+    });
     res.json({ success: true, message: "Show Added Successfully" });
   } catch (error) {
     console.log(error);
@@ -124,27 +130,27 @@ export const getShows = async (req, res) => {
 
 //api to get a single show from the database
 
-export const getShow=async(req,res)=>{
-    try{
-        const {movieId}=req.params;
-        
-        //get all upcoming shows for the movie from the database
+export const getShow = async (req, res) => {
+  try {
+    const { movieId } = req.params;
 
-        const shows=await Show.find({movie : movieId,showDateTime:{$gte : new Date()}});
-        const movie = await Movie.findById(movieId);
-        const dateTime={};
+    //get all upcoming shows for the movie from the database
 
-        shows.forEach((show)=>{
-            const date=show.showDateTime.toISOString().split("T")[0];
-            if(!dateTime[date]){
-                dateTime[date]=[]
-            }
-            dateTime[date].push({time:show.showDateTime,showId:show._id })
-        });
+    const shows = await Show.find({ movie: movieId, showDateTime: { $gte: new Date() } });
+    const movie = await Movie.findById(movieId);
+    const dateTime = {};
 
-        res.json({success : true,movie,dateTime });
-    }catch(error){
-        console.log(error);
-        res.json({success : false, message: error.message});
-    }
+    shows.forEach((show) => {
+      const date = show.showDateTime.toISOString().split("T")[0];
+      if (!dateTime[date]) {
+        dateTime[date] = []
+      }
+      dateTime[date].push({ time: show.showDateTime, showId: show._id })
+    });
+
+    res.json({ success: true, movie, dateTime });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
 }
