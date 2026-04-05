@@ -7,8 +7,7 @@ import Booking from "../models/Booking.js";
 import Show from "../models/Show.js";
 import Movie from "../models/Movie.js";
 import sendEmail from "../configs/nodemailer.js";
-import { messageInRaw } from "svix";
-import { resourceLimits } from "worker_threads";
+
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "movie-ticket-booking" });
@@ -235,8 +234,11 @@ const sendNewShowNotifications = inngest.createFunction(
   { event: "app/show.added" },
   async ({ event }) => {
     const { showId } = event.data;
+    if (!showId) return { message: "No showId provided" };
+    
     const show = await Show.findById(showId).populate('movie');
-    if (!show) return;
+    if (!show || !show.movie) return { message: "Show or Movie not found" };
+    
     const users = await User.find({}).select("name email");
     for (const user of users) {
       await sendEmail({
