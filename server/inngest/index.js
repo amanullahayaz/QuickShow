@@ -10,7 +10,10 @@ import sendEmail from "../configs/nodemailer.js";
 
 
 // Create a client to send and receive events
-export const inngest = new Inngest({ id: "movie-ticket-booking" });
+export const inngest = new Inngest({ 
+  id: "movie-ticket-booking",
+  eventKey: process.env.INNGEST_EVENT_KEY || "local"
+});
 
 //Inngest fn to save user data to a database
 const syncUserCreation = inngest.createFunction(
